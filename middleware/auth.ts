@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import jwt from 'jsonwebtoken';
+import { decode_jwt, validate_jwt } from '@dheerajjha451/jwtd';
+
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 export function authMiddleware(req: NextApiRequest, res: NextApiResponse, next: Function) {
     const token = req.headers.authorization?.split(' ')[1];
@@ -8,9 +10,14 @@ export function authMiddleware(req: NextApiRequest, res: NextApiResponse, next: 
         return;
     }
 
+    if (!validate_jwt(JWT_SECRET, token)) {
+        res.status(401).send('Unauthorized');
+        return;
+    }
+
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-        (req as any).user = decoded; 
+        const { id, payload, expires_at } = decode_jwt(JWT_SECRET, token);
+        (req as any).user = { id, ...payload, expires_at };
         next();
     } catch (err) {
         res.status(401).send('Unauthorized');
