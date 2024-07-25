@@ -4,6 +4,8 @@ import { useState } from 'react';
 
 export default function TokenInput() {
     const [token, setToken] = useState('');
+    const [message, setMessage] = useState('');
+    const [isAuthorized, setIsAuthorized] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setToken(e.target.value);
@@ -20,9 +22,11 @@ export default function TokenInput() {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('Protected Data:', data);
+            setMessage(`Protected Data: ${JSON.stringify(data)}`);
+            setIsAuthorized(true);
         } else {
-            console.error('Unauthorized');
+            setMessage('Unauthorized');
+            setIsAuthorized(false);
         }
     };
 
@@ -53,6 +57,11 @@ export default function TokenInput() {
                         </button>
                     </div>
                 </form>
+                {message && (
+                    <div className={`mt-4 p-4 rounded text-center text-sm ${isAuthorized ? 'text-green-600' : 'text-red-600'}`}>
+                        {message}
+                    </div>
+                )}
             </div>
         </div>
     );
